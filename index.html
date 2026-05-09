@@ -1,0 +1,3375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<!--
+============================================================
+OTTERMODE DAILY TRACKER
+============================================================
+
+DESIGNER NOTE:
+This is a single-file app.
+
+That means this one file contains:
+1. HTML  = the structure/content of the app
+2. CSS   = the visual design/colors/layout
+3. JS    = the functionality/clicks/saving/photos/archive
+
+Think of it like this:
+- HTML is the wireframe.
+- CSS is the branding/style guide.
+- JavaScript is the interactivity.
+
+IMPORTANT FOR BEGINNERS:
+Anything with an id like id="flipBtn" or id="startScreen"
+is like a named layer in Illustrator.
+
+JavaScript looks for those exact names.
+You can safely change visible text, colors, and spacing.
+Do not rename IDs unless you also update the JavaScript.
+
+LATEST FEATURES:
+- Start screen before tracker begins
+- 7 / 15 / 21 / 31 / 40 Day options
+- Front card and back card
+- Flip button always says "Flip"
+- Auto end date from start date + length
+- Auto suggested goal weight from starting weight - 1 pound per day
+- Goal weight can still be manually edited
+- Daily checkoff, notes, weights, photos
+- Camera photo and upload photo both compress
+- Photos are stored as smaller app-optimized copies
+- Archive/history system
+- Forest, Ocean, Desert, Stone, Neon themes
+- Daily WEB Bible verses
+- Progress stat cards now show:
+  1. LBS TO GO
+  2. DAYS TO GO
+  3. LAST LOG
+
+SEARCH THESE SECTION NAMES IN NANO:
+SECTION: THEME COLORS
+SECTION: START SCREEN
+SECTION: FRONT CARD
+SECTION: BACK CARD
+SECTION: TRACKING PLAN SETTINGS
+SECTION: DATE AND WEIGHT AUTO-CALCULATION
+SECTION: PHOTO COMPRESSION - APK OPTIMIZED
+SECTION: ARCHIVE
+SECTION: START APP
+============================================================
+-->
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ottermode Daily Tracker</title>
+
+<style>
+
+/* =========================================================
+   SECTION: GLOBAL RESET
+
+   DESIGNER NOTE:
+   This removes default browser spacing so the app starts clean.
+   It is like creating a blank artboard with no default margins.
+   ========================================================= */
+
+*{
+box-sizing:border-box;
+}
+
+html,
+body{
+margin:0;
+min-height:100%;
+overflow-x:hidden;
+overflow-y:auto;
+}
+
+/* =========================================================
+   SECTION: THEME COLORS
+
+   DESIGNER NOTE:
+   These variables are like swatches in Illustrator.
+
+   --bg1      = top/background color
+   --bg2      = bottom/background color
+   --paper    = main card color
+   --cream    = light text color
+   --ink      = dark text and line color
+   --accent   = buttons/highlights/progress bar
+   --header1  = first header gradient color
+   --header2  = second header gradient color
+   --strip    = footer strip color
+   --danger   = warning/safety box color
+   --line     = input underline color
+
+   To change a theme, edit these color values first.
+   ========================================================= */
+
+:root{
+--bg1:#071018;
+--bg2:#12150f;
+--paper:#fbf5e8;
+--cream:#f4ecd8;
+--ink:#08182d;
+--accent:#d8c482;
+--header1:#26381f;
+--header2:#152413;
+--strip:#26381f;
+--danger:#9f2f2b;
+--line:rgba(8,24,45,.6);
+}
+
+/* Forest theme: earthy brown, green, tan */
+body.theme-forest{
+--bg1:#1f2a17;
+--bg2:#3a2b16;
+--paper:#f5edd7;
+--cream:#f4ecd8;
+--ink:#2a1b0c;
+--accent:#c5a35b;
+--header1:#3e5a2a;
+--header2:#7a4e24;
+--strip:#365123;
+--danger:#9f2f2b;
+--line:rgba(42,27,12,.6);
+}
+
+/* Ocean theme: tropical aqua/teal */
+body.theme-ocean{
+--bg1:#0c5f66;
+--bg2:#38a7a5;
+--paper:#f2f4df;
+--cream:#f4ecd8;
+--ink:#073b3f;
+--accent:#9ee6d8;
+--header1:#12958f;
+--header2:#66c7bd;
+--strip:#0e837f;
+--danger:#9f2f2b;
+--line:rgba(7,59,63,.55);
+}
+
+/* Stone theme: cold gray/slate */
+body.theme-stone{
+--bg1:#111820;
+--bg2:#252a2d;
+--paper:#eef0ee;
+--cream:#eef0ee;
+--ink:#111820;
+--accent:#c9d4d7;
+--header1:#3a4650;
+--header2:#1d252c;
+--strip:#303b43;
+--danger:#9f2f2b;
+--line:rgba(17,24,32,.6);
+}
+
+/* Neon theme: cyberpunk dark/electric */
+body.theme-neon{
+--bg1:#050510;
+--bg2:#12051d;
+--paper:#f3f0ff;
+--cream:#f3f0ff;
+--ink:#10091f;
+--accent:#7dfcff;
+--header1:#151138;
+--header2:#30115e;
+--strip:#151138;
+--danger:#d934ff;
+--line:rgba(16,9,31,.6);
+}
+
+/* Desert theme: light beige desert oasis */
+body.theme-desert{
+--bg1:#d8bd8a;
+--bg2:#f2dfb8;
+--paper:#fff2d2;
+--cream:#fff2d2;
+--ink:#4a3217;
+--accent:#6f9f73;
+--header1:#c99a55;
+--header2:#7f9f6d;
+--strip:#b98743;
+--danger:#a65a3c;
+--line:rgba(74,50,23,.55);
+}
+
+/* =========================================================
+   SECTION: BODY / APP WRAPPER
+
+   DESIGNER NOTE:
+   body = the full page/background.
+   .app = the phone-size container holding the app.
+
+   max-width:460px keeps it phone-app sized even on bigger screens.
+   ========================================================= */
+
+body{
+background:
+radial-gradient(circle at top,rgba(255,239,197,.3),transparent 34%),
+linear-gradient(180deg,var(--bg1),var(--bg2));
+font-family:Arial,Helvetica,sans-serif;
+color:var(--cream);
+}
+
+.app{
+width:100%;
+max-width:460px;
+margin:0 auto;
+padding:16px 16px 90px;
+}
+
+/* JavaScript uses this class to hide/show screens. Do not delete. */
+.hidden{
+display:none !important;
+}
+
+/* =========================================================
+   SECTION: START SCREEN
+
+   DESIGNER NOTE:
+   This is the first screen before a goal starts.
+
+   .start-screen = main start card
+   .start-hero   = top title section
+   .start-body   = form section
+   ========================================================= */
+
+.start-screen{
+background:
+linear-gradient(0deg,rgba(8,24,45,.025),rgba(8,24,45,.025)),
+var(--paper);
+color:var(--ink);
+border-radius:28px;
+overflow:hidden;
+border:2px solid rgba(245,236,216,.6);
+box-shadow:0 22px 60px rgba(0,0,0,.45);
+margin-top:18px;
+}
+
+.start-hero{
+background:
+linear-gradient(135deg,rgba(255,255,255,.18),transparent 45%),
+linear-gradient(90deg,var(--header1),var(--header2));
+color:#fff8df;
+padding:24px 18px;
+text-align:center;
+}
+
+.start-hero small{
+display:block;
+font-weight:1000;
+letter-spacing:4px;
+color:var(--accent);
+font-size:11px;
+}
+
+.start-hero h1{
+margin:8px 0 4px;
+font-size:42px;
+letter-spacing:1px;
+line-height:.95;
+}
+
+.start-hero p{
+margin:8px 0 0;
+font-size:12px;
+font-weight:900;
+letter-spacing:1.6px;
+}
+
+.start-body{
+padding:16px;
+}
+
+.start-field{
+border:2px solid var(--ink);
+border-radius:16px;
+background:rgba(255,255,255,.35);
+padding:12px;
+margin-bottom:12px;
+}
+
+.start-field label{
+display:block;
+font-size:11px;
+letter-spacing:1.6px;
+font-weight:1000;
+margin-bottom:6px;
+color:var(--header1);
+}
+
+.start-field input,
+.start-field select{
+width:100%;
+background:transparent;
+border:0;
+border-bottom:2px solid var(--line);
+padding:8px 2px;
+font-size:18px;
+font-weight:900;
+color:var(--ink);
+outline:none;
+border-radius:0;
+}
+
+.start-button{
+width:100%;
+border:0;
+border-radius:999px;
+background:var(--accent);
+color:var(--ink);
+font-weight:1000;
+font-size:18px;
+letter-spacing:1px;
+padding:16px;
+box-shadow:0 8px 20px rgba(0,0,0,.28);
+margin-top:8px;
+}
+
+.start-note{
+font-size:12px;
+font-weight:800;
+line-height:1.35;
+margin:12px 0 0;
+text-align:center;
+color:var(--header1);
+}
+
+/* =========================================================
+   SECTION: TOP BAR / BUTTONS
+
+   DESIGNER NOTE:
+   This controls the top area after the tracker starts:
+   - OTTERMODE label
+   - Daily Tracker title
+   - Theme icon
+   - Flip button
+   ========================================================= */
+
+.topbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:12px;
+margin-bottom:14px;
+}
+
+.brand-small{
+font-size:11px;
+font-weight:900;
+letter-spacing:4px;
+color:var(--accent);
+}
+
+.topbar h1{
+margin:3px 0 0;
+font-size:23px;
+line-height:1;
+}
+
+.top-actions{
+display:flex;
+gap:8px;
+align-items:center;
+}
+
+button,
+select,
+input,
+textarea{
+font-family:inherit;
+}
+
+.action-btn{
+border:0;
+border-radius:999px;
+background:var(--accent);
+color:var(--ink);
+font-weight:900;
+padding:11px 14px;
+box-shadow:0 8px 20px rgba(0,0,0,.28);
+}
+
+.ghost-btn{
+background:rgba(255,255,255,.12);
+color:#fff8df;
+border:1px solid rgba(255,255,255,.25);
+}
+
+/* =========================================================
+   SECTION: THEME MENU
+
+   DESIGNER NOTE:
+   The round theme icon opens this dropdown.
+   ========================================================= */
+
+.theme-btn{
+width:46px;
+height:46px;
+border-radius:999px;
+border:2px solid rgba(255,255,255,.25);
+background:var(--accent);
+display:grid;
+place-items:center;
+box-shadow:0 8px 20px rgba(0,0,0,.28);
+color:var(--ink);
+}
+
+.theme-menu{
+display:none;
+grid-template-columns:repeat(5,1fr);
+gap:8px;
+background:rgba(255,255,255,.08);
+border:1px solid rgba(255,255,255,.18);
+border-radius:18px;
+padding:10px;
+margin-bottom:14px;
+}
+
+.theme-menu.open{
+display:grid;
+}
+
+.theme-choice{
+border:0;
+border-radius:16px;
+padding:10px 4px;
+font-weight:900;
+font-size:9px;
+color:var(--ink);
+background:var(--paper);
+}
+
+.theme-choice .mono-icon{
+margin:0 auto 6px;
+}
+
+/* =========================================================
+   SECTION: THEME ICONS
+
+   DESIGNER NOTE:
+   These icons are CSS shapes, not image files.
+   They inherit the theme color automatically.
+   ========================================================= */
+
+.mono-icon{
+width:26px;
+height:26px;
+display:block;
+position:relative;
+color:currentColor;
+}
+
+/* Forest icon */
+.icon-forest::before{
+content:"";
+position:absolute;
+left:2px;
+bottom:2px;
+width:22px;
+height:18px;
+background:currentColor;
+clip-path:polygon(50% 0,100% 100%,0 100%);
+}
+
+.icon-forest::after{
+content:"";
+position:absolute;
+left:8px;
+bottom:2px;
+width:10px;
+height:10px;
+background:var(--paper);
+clip-path:polygon(50% 0,100% 100%,0 100%);
+opacity:.8;
+}
+
+/* Ocean icon */
+.icon-ocean::before{
+content:"";
+position:absolute;
+left:2px;
+top:7px;
+width:22px;
+height:14px;
+border:4px solid currentColor;
+border-top:0;
+border-left:0;
+border-radius:0 0 18px 0;
+transform:rotate(-15deg);
+}
+
+.icon-ocean::after{
+content:"";
+position:absolute;
+left:3px;
+bottom:2px;
+width:20px;
+height:4px;
+border-radius:999px;
+background:currentColor;
+}
+
+/* Stone icon */
+.icon-stone::before{
+content:"";
+position:absolute;
+left:4px;
+top:5px;
+width:18px;
+height:18px;
+background:currentColor;
+clip-path:polygon(24% 0,78% 8%,100% 45%,78% 100%,18% 92%,0 44%);
+}
+
+.icon-stone::after{
+content:"";
+position:absolute;
+left:9px;
+top:9px;
+width:9px;
+height:9px;
+border-top:2px solid var(--paper);
+border-left:2px solid var(--paper);
+opacity:.75;
+}
+
+/* Neon icon */
+.icon-neon::before{
+content:"";
+position:absolute;
+left:4px;
+top:3px;
+width:18px;
+height:20px;
+border:4px solid currentColor;
+clip-path:polygon(0 0,100% 0,62% 40%,100% 40%,26% 100%,44% 55%,0 55%);
+}
+
+.icon-neon::after{
+content:"";
+position:absolute;
+right:0;
+bottom:1px;
+width:7px;
+height:7px;
+border-radius:999px;
+background:currentColor;
+}
+
+/* Desert oasis icon */
+.icon-desert::before{
+content:"";
+position:absolute;
+left:2px;
+bottom:4px;
+width:22px;
+height:10px;
+background:currentColor;
+border-radius:50% 50% 45% 45%;
+}
+
+.icon-desert::after{
+content:"";
+position:absolute;
+left:8px;
+top:3px;
+width:10px;
+height:10px;
+border-radius:999px;
+background:currentColor;
+box-shadow:0 14px 0 -2px var(--paper);
+}
+
+/* =========================================================
+   SECTION: TRACKING LENGTH SELECTOR
+   ========================================================= */
+
+.fast-row{
+display:grid;
+grid-template-columns:1fr;
+gap:10px;
+margin-bottom:14px;
+}
+
+.select-box{
+background:rgba(255,255,255,.08);
+border:1px solid rgba(255,255,255,.18);
+border-radius:16px;
+padding:10px;
+}
+
+.select-box label{
+display:block;
+font-size:10px;
+font-weight:900;
+letter-spacing:2px;
+color:var(--accent);
+margin-bottom:6px;
+}
+
+select{
+width:100%;
+background:var(--paper);
+color:var(--ink);
+border:0;
+border-radius:12px;
+padding:10px;
+font-weight:900;
+}
+
+/* =========================================================
+   SECTION: CARD STRUCTURE
+
+   DESIGNER NOTE:
+   .card is the front/back card shell.
+   Only one card is visible at a time.
+   JavaScript adds/removes the .active class.
+   ========================================================= */
+
+.card{
+display:none;
+position:relative;
+background:
+linear-gradient(0deg,rgba(8,24,45,.025),rgba(8,24,45,.025)),
+var(--paper);
+color:var(--ink);
+border-radius:24px;
+overflow:hidden;
+border:2px solid rgba(245,236,216,.6);
+box-shadow:0 22px 60px rgba(0,0,0,.45);
+margin-bottom:16px;
+}
+
+.card.active{
+display:block;
+}
+
+/* subtle paper/card texture */
+.card::before{
+content:"";
+position:absolute;
+inset:0;
+pointer-events:none;
+background:
+radial-gradient(circle at 18% 12%,rgba(0,0,0,.05),transparent 9%),
+radial-gradient(circle at 80% 20%,rgba(0,0,0,.035),transparent 8%),
+linear-gradient(90deg,rgba(0,0,0,.025) 1px,transparent 1px);
+background-size:190px 190px,150px 150px,32px 32px;
+mix-blend-mode:multiply;
+opacity:.55;
+}
+
+/* Theme-specific card textures */
+body.theme-ocean .card::before{
+background:
+radial-gradient(circle at 20% 20%,rgba(255,255,255,.16),transparent 14%),
+repeating-radial-gradient(ellipse at top,rgba(0,130,135,.10) 0 2px,transparent 2px 15px);
+opacity:.55;
+}
+
+body.theme-stone .card::before{
+background:
+linear-gradient(135deg,rgba(0,0,0,.05) 25%,transparent 25%),
+linear-gradient(45deg,rgba(0,0,0,.035) 25%,transparent 25%);
+background-size:34px 34px;
+opacity:.55;
+}
+
+body.theme-neon .card{
+box-shadow:0 22px 60px rgba(0,0,0,.55),0 0 18px rgba(125,252,255,.45);
+}
+
+body.theme-neon .card::before{
+background:
+linear-gradient(90deg,rgba(125,252,255,.12) 1px,transparent 1px),
+linear-gradient(0deg,rgba(245,82,255,.10) 1px,transparent 1px);
+background-size:26px 26px;
+opacity:.45;
+}
+
+body.theme-desert .card::before{
+background:
+radial-gradient(circle at 75% 18%,rgba(255,220,150,.25),transparent 12%),
+repeating-linear-gradient(160deg,rgba(120,70,20,.055) 0 2px,transparent 2px 18px);
+opacity:.45;
+}
+
+/* =========================================================
+   SECTION: CARD HEADER / BODY
+   ========================================================= */
+
+.card-header{
+position:relative;
+z-index:1;
+padding:18px;
+color:#fff8df;
+background:
+linear-gradient(135deg,rgba(255,255,255,.15),transparent 45%),
+linear-gradient(90deg,var(--header1),var(--header2));
+display:flex;
+justify-content:space-between;
+gap:12px;
+align-items:flex-start;
+}
+
+.card-title h2{
+margin:0;
+font-size:35px;
+line-height:.92;
+letter-spacing:-1px;
+}
+
+.card-title p{
+margin:7px 0 0;
+font-size:10px;
+letter-spacing:2px;
+font-weight:900;
+}
+
+.target-badge{
+min-width:92px;
+text-align:right;
+border:1px solid rgba(255,255,255,.42);
+border-radius:14px;
+padding:9px;
+font-weight:900;
+}
+
+.target-badge strong{
+display:block;
+font-size:18px;
+}
+
+.target-badge span{
+display:block;
+font-size:9px;
+letter-spacing:1px;
+}
+
+.card-body{
+position:relative;
+z-index:1;
+padding:15px;
+}
+
+/* =========================================================
+   SECTION: FRONT CARD HERO
+   ========================================================= */
+
+.hero-panel{
+border:2px solid var(--ink);
+border-radius:18px;
+overflow:hidden;
+background:rgba(255,255,255,.35);
+margin-bottom:12px;
+}
+
+.otter-banner{
+background:var(--header2);
+color:#fff8df;
+padding:10px 12px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+}
+
+.otter-title{
+font-size:40px;
+font-weight:1000;
+letter-spacing:5px;
+line-height:1;
+}
+
+.otter-sub{
+font-size:10px;
+font-weight:900;
+letter-spacing:1.8px;
+color:var(--accent);
+margin-top:6px;
+}
+
+.island-mark{
+font-weight:900;
+font-size:15px;
+text-align:right;
+line-height:1.25;
+}
+
+/* =========================================================
+   SECTION: INFO GRID
+
+   DESIGNER NOTE:
+   This is the 2x2 grid:
+   Start Date / End Date
+   Start Weight / Goal Weight
+   ========================================================= */
+
+.info-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+border-top:2px solid var(--ink);
+}
+
+.info-cell{
+padding:10px;
+border-right:2px solid var(--ink);
+border-bottom:2px solid var(--ink);
+min-height:74px;
+}
+
+.info-cell:nth-child(even){
+border-right:0;
+}
+
+.info-cell label{
+font-size:10px;
+letter-spacing:1.4px;
+font-weight:900;
+display:block;
+margin-bottom:5px;
+}
+
+input,
+textarea{
+width:100%;
+background:transparent;
+border:0;
+border-bottom:2px solid var(--line);
+padding:7px 2px;
+font-size:18px;
+font-weight:900;
+color:var(--ink);
+outline:none;
+border-radius:0;
+}
+
+input[readonly]{
+opacity:.85;
+}
+
+textarea{
+border:2px solid var(--line);
+border-radius:12px;
+padding:9px;
+font-size:15px;
+min-height:72px;
+resize:vertical;
+}
+
+/* =========================================================
+   SECTION: PROGRESS STAT CARDS
+
+   DESIGNER NOTE:
+   These are the 3 big boxes under the date/weight grid.
+
+   Updated boxes:
+   1. LBS TO GO
+   2. DAYS TO GO
+   3. LAST LOG
+
+   This avoids repeating information already shown elsewhere.
+   ========================================================= */
+
+.stat-row{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:8px;
+margin:12px 0;
+}
+
+.stat-card{
+border:2px solid var(--ink);
+border-radius:14px;
+padding:10px;
+background:rgba(255,255,255,.35);
+text-align:center;
+min-height:78px;
+}
+
+.stat-card small{
+display:block;
+font-size:9px;
+font-weight:900;
+letter-spacing:1.4px;
+color:var(--header1);
+}
+
+.stat-card b{
+display:block;
+font-size:27px;
+line-height:1.1;
+margin-top:4px;
+}
+
+/* =========================================================
+   SECTION: FOCUS / PROGRESS PANEL
+   ========================================================= */
+
+.focus-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-top:10px;
+}
+
+.box{
+border:2px solid var(--ink);
+border-radius:16px;
+padding:12px;
+background:rgba(255,255,255,.32);
+}
+
+.box h3{
+margin:0 0 9px;
+font-size:13px;
+letter-spacing:1px;
+text-transform:uppercase;
+}
+
+.check-list{
+display:grid;
+gap:6px;
+font-size:12px;
+font-weight:900;
+}
+
+.check-list div{
+display:flex;
+align-items:center;
+gap:7px;
+}
+
+.fake-check{
+width:15px;
+height:15px;
+border:2px solid var(--ink);
+display:inline-grid;
+place-items:center;
+font-size:10px;
+}
+
+.progress-panel{
+background:var(--header1);
+color:#fff8df;
+border-radius:16px;
+padding:12px;
+}
+
+.progress-panel small{
+font-size:10px;
+letter-spacing:1.4px;
+font-weight:900;
+color:var(--accent);
+}
+
+.progress-number{
+font-size:38px;
+font-weight:1000;
+line-height:1;
+margin:6px 0;
+}
+
+.bar{
+height:13px;
+border-radius:999px;
+background:rgba(255,255,255,.2);
+overflow:hidden;
+margin:8px 0;
+}
+
+.bar-fill{
+height:100%;
+width:0%;
+background:var(--accent);
+border-radius:999px;
+transition:width .2s;
+}
+
+/* =========================================================
+   SECTION: VERSE CARD
+   ========================================================= */
+
+.verse-card{
+margin-top:12px;
+border:2px solid var(--ink);
+border-radius:16px;
+overflow:hidden;
+background:rgba(255,255,255,.32);
+}
+
+.verse-head{
+background:var(--header1);
+color:#fff8df;
+padding:10px 12px;
+font-size:12px;
+font-weight:1000;
+letter-spacing:1.5px;
+display:flex;
+justify-content:space-between;
+gap:8px;
+}
+
+.verse-body{
+padding:12px;
+}
+
+.verse-stage{
+font-size:11px;
+font-weight:1000;
+letter-spacing:1.2px;
+color:var(--header1);
+text-transform:uppercase;
+}
+
+.verse-title{
+margin:4px 0 6px;
+font-size:18px;
+font-weight:1000;
+}
+
+.verse-ref{
+font-size:12px;
+font-weight:1000;
+margin-bottom:8px;
+}
+
+.verse-text{
+font-size:14px;
+font-weight:800;
+line-height:1.4;
+}
+
+/* =========================================================
+   SECTION: BACK CARD / DAY GRID
+   ========================================================= */
+
+.footer-strip{
+background:var(--strip);
+color:#fff8df;
+display:grid;
+grid-template-columns:repeat(4,1fr);
+text-align:center;
+font-size:10px;
+font-weight:900;
+letter-spacing:.6px;
+}
+
+.footer-strip div{
+padding:10px 3px;
+border-right:1px solid rgba(255,255,255,.22);
+}
+
+.footer-strip div:last-child{
+border-right:0;
+}
+
+.help-text{
+font-size:11px;
+font-weight:900;
+margin:0 0 8px;
+color:var(--header1);
+text-align:center;
+}
+
+.days-grid{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+border:2px solid var(--ink);
+border-radius:16px;
+overflow:hidden;
+background:rgba(255,255,255,.45);
+}
+
+.day-cell{
+min-height:66px;
+border:0;
+border-right:1px solid rgba(8,24,45,.35);
+border-bottom:1px solid rgba(8,24,45,.35);
+padding:6px 3px;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+gap:4px;
+background:transparent;
+color:var(--ink);
+font-weight:900;
+touch-action:manipulation;
+}
+
+.day-cell:nth-child(5n){
+border-right:0;
+}
+
+.day-label{
+font-size:9px;
+letter-spacing:.5px;
+}
+
+.day-box{
+width:18px;
+height:18px;
+border:2px solid var(--ink);
+background:#fffdf4;
+display:grid;
+place-items:center;
+font-size:13px;
+line-height:1;
+}
+
+.day-cell.done{
+background:rgba(38,56,31,.18);
+}
+
+.day-cell.done .day-box{
+background:var(--header1);
+color:#fff8df;
+}
+
+.day-cell.has-media{
+box-shadow:inset 0 -5px 0 var(--accent);
+}
+
+.milestone-note{
+font-size:8px;
+line-height:1.05;
+color:var(--header1);
+font-weight:1000;
+text-align:center;
+}
+
+/* =========================================================
+   SECTION: WEIGHT LOG / MILESTONES
+   ========================================================= */
+
+.weight-log{
+margin-top:12px;
+border:2px solid var(--ink);
+border-radius:16px;
+overflow:hidden;
+background:rgba(255,255,255,.32);
+}
+
+.section-title{
+background:var(--header1);
+color:#fff8df;
+padding:9px 12px;
+font-weight:1000;
+letter-spacing:1px;
+font-size:13px;
+}
+
+.weight-rows{
+padding:8px;
+}
+
+.weight-row{
+display:grid;
+grid-template-columns:52px 1fr 1.15fr;
+gap:8px;
+align-items:center;
+border-bottom:1px solid rgba(8,24,45,.24);
+padding:6px 0;
+}
+
+.weight-row:last-child{
+border-bottom:0;
+}
+
+.weight-row span{
+font-size:12px;
+font-weight:1000;
+}
+
+.weight-row input{
+font-size:15px;
+padding:5px 2px;
+}
+
+.milestones{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:8px;
+margin-top:12px;
+}
+
+.milestone{
+border:2px solid var(--ink);
+border-radius:999px;
+aspect-ratio:1;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+text-align:center;
+font-size:10px;
+font-weight:1000;
+background:rgba(255,255,255,.3);
+}
+
+.milestone.hit{
+background:var(--accent);
+}
+
+.refeed{
+margin-top:12px;
+border:2px solid var(--danger);
+border-radius:16px;
+overflow:hidden;
+}
+
+.refeed-title{
+background:var(--danger);
+color:#fff;
+font-weight:1000;
+letter-spacing:1px;
+padding:9px 12px;
+font-size:13px;
+}
+
+.refeed p{
+margin:0;
+padding:10px 12px;
+font-size:12px;
+font-weight:800;
+line-height:1.35;
+}
+
+/* =========================================================
+   SECTION: BOTTOM / MODALS / MEDIA
+
+   DESIGNER NOTE:
+   Modals are popup windows.
+   The day editor, history, and archive details are all modals.
+   ========================================================= */
+
+.bottom-actions{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin-top:14px;
+padding-bottom:8px;
+}
+
+.saved{
+grid-column:1 / -1;
+font-size:11px;
+color:var(--accent);
+text-align:center;
+}
+
+.modal{
+display:none;
+position:fixed;
+inset:0;
+z-index:100;
+background:rgba(0,0,0,.65);
+padding:18px;
+align-items:center;
+justify-content:center;
+}
+
+.modal.open{
+display:flex;
+}
+
+.modal-card{
+width:100%;
+max-width:430px;
+max-height:88vh;
+overflow-y:auto;
+background:var(--paper);
+color:var(--ink);
+border-radius:24px;
+border:2px solid var(--accent);
+box-shadow:0 25px 80px rgba(0,0,0,.7);
+}
+
+.modal-head{
+background:var(--header1);
+color:#fff8df;
+padding:16px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+}
+
+.modal-head h2{
+margin:0;
+font-size:26px;
+}
+
+.close-btn{
+background:var(--accent);
+color:var(--ink);
+border:0;
+border-radius:999px;
+padding:9px 12px;
+font-weight:900;
+}
+
+.modal-body{
+padding:16px;
+}
+
+.big-check{
+width:100%;
+border:2px solid var(--ink);
+border-radius:16px;
+background:#fff8df;
+color:var(--ink);
+font-weight:1000;
+font-size:18px;
+padding:14px;
+margin-bottom:12px;
+}
+
+.big-check.done{
+background:var(--header1);
+color:#fff8df;
+}
+
+.modal-body label{
+display:block;
+font-size:11px;
+font-weight:900;
+letter-spacing:1.5px;
+margin-top:12px;
+}
+
+.media-actions{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-top:10px;
+}
+
+.media-btn{
+display:block;
+width:100%;
+border:2px dashed var(--ink);
+border-radius:16px;
+padding:14px 8px;
+font-weight:1000;
+text-align:center;
+background:#fff8df;
+font-size:13px;
+}
+
+.media-preview{
+margin-top:12px;
+display:grid;
+grid-template-columns:1fr;
+gap:8px;
+}
+
+.media-item{
+border:2px solid var(--ink);
+border-radius:14px;
+overflow:hidden;
+background:#fff8df;
+min-height:90px;
+display:grid;
+place-items:center;
+font-size:12px;
+font-weight:900;
+text-align:center;
+}
+
+/* object-fit:contain means the photo is not cropped */
+.media-item img,
+.media-item video{
+width:100%;
+height:auto;
+max-height:none;
+object-fit:contain;
+display:block;
+background:#000;
+}
+
+.trash-btn{
+width:46px;
+height:46px;
+border-radius:999px;
+display:grid;
+place-items:center;
+font-size:20px;
+padding:0;
+margin:0 auto;
+}
+
+.hidden-input{
+display:none;
+}
+
+/* =========================================================
+   SECTION: ARCHIVE HISTORY
+   ========================================================= */
+
+.history-list{
+display:grid;
+gap:12px;
+}
+
+.archive-summary-card{
+border:2px solid var(--ink);
+border-radius:18px;
+background:rgba(255,255,255,.38);
+overflow:hidden;
+}
+
+.archive-summary-head{
+background:var(--header1);
+color:#fff8df;
+padding:12px;
+}
+
+.archive-summary-head h3{
+margin:0;
+font-size:20px;
+}
+
+.archive-summary-head p{
+margin:4px 0 0;
+font-size:12px;
+font-weight:900;
+}
+
+.archive-summary-body{
+padding:12px;
+}
+
+.archive-stats{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin-bottom:10px;
+}
+
+.archive-stat{
+border:2px solid var(--ink);
+border-radius:14px;
+padding:9px;
+text-align:center;
+font-weight:900;
+}
+
+.archive-stat small{
+display:block;
+font-size:9px;
+letter-spacing:1px;
+color:var(--header1);
+}
+
+.archive-stat b{
+display:block;
+font-size:20px;
+}
+
+.archive-photos{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin-top:10px;
+}
+
+.archive-photo{
+border:2px solid var(--ink);
+border-radius:14px;
+overflow:hidden;
+background:#fff8df;
+min-height:120px;
+display:grid;
+place-items:center;
+font-size:11px;
+font-weight:900;
+text-align:center;
+}
+
+.archive-photo img{
+width:100%;
+height:auto;
+display:block;
+object-fit:contain;
+background:#000;
+}
+
+.history-actions{
+display:flex;
+gap:8px;
+margin-top:12px;
+flex-wrap:wrap;
+}
+
+.history-item{
+border:2px solid var(--ink);
+border-radius:16px;
+background:rgba(255,255,255,.35);
+padding:12px;
+}
+
+.history-item h3{
+margin:0 0 6px;
+font-size:17px;
+}
+
+.history-item p{
+margin:2px 0;
+font-size:12px;
+font-weight:800;
+}
+
+.archive-day{
+border-bottom:1px solid rgba(8,24,45,.2);
+padding:8px 0;
+font-size:12px;
+font-weight:800;
+}
+
+.archive-media img{
+width:100%;
+height:auto;
+max-height:none;
+object-fit:contain;
+border:2px solid var(--ink);
+border-radius:12px;
+margin-top:8px;
+background:#000;
+}
+
+/* =========================================================
+   SECTION: SMALL PHONE FIXES
+   ========================================================= */
+
+@media(max-width:380px){
+.card-title h2{
+font-size:31px;
+}
+
+.otter-title{
+font-size:34px;
+}
+
+.stat-row,
+.focus-grid{
+grid-template-columns:1fr;
+}
+
+.media-actions{
+grid-template-columns:1fr;
+}
+
+.theme-menu{
+grid-template-columns:repeat(3,1fr);
+}
+}
+
+</style>
+</head>
+
+<body class="theme-forest">
+
+<div class="app">
+
+<!-- =========================================================
+     SECTION: START SCREEN HTML
+
+     DESIGNER NOTE:
+     This is the first visible screen.
+
+     Safe edits:
+     - Change visible words between tags.
+     - Change placeholder text.
+     - Change option labels.
+
+     Avoid renaming IDs.
+     JavaScript needs them.
+     ========================================================= -->
+
+<section class="start-screen" id="startScreen">
+<div class="start-hero">
+<small>OTTERMODE</small>
+<h1>START<br>A GOAL</h1>
+<p>ONE DAY AT A TIME</p>
+</div>
+
+<div class="start-body">
+
+<div class="start-field">
+<label>Goal Name Optional</label>
+<input id="setupFastName" placeholder="Example: First 40 Day Reset">
+</div>
+
+<div class="start-field">
+<label>Start Date Optional</label>
+<input id="setupStartDate" placeholder="Example: 5/7/26">
+</div>
+
+<div class="start-field">
+<label>Tracking Length</label>
+<select id="setupFastType">
+<option value="40">40 Day</option>
+<option value="31">31 Day</option>
+<option value="21">21 Day</option>
+<option value="15">15 Day</option>
+<option value="7">7 Day</option>
+</select>
+</div>
+
+<div class="start-field">
+<label>Current Weight Optional</label>
+<input id="setupStartWeight" inputmode="decimal" placeholder="Example: 169">
+</div>
+
+<button class="start-button" id="startFastBtn" type="button">START</button>
+
+<p class="start-note">
+End date is generated from your start date and tracking length. Goal weight is suggested as one pound per day, but you can edit it.
+</p>
+
+</div>
+</section>
+
+<!-- =========================================================
+     SECTION: TRACKER SHELL HTML
+
+     DESIGNER NOTE:
+     This whole section is hidden until the user presses START.
+     ========================================================= -->
+
+<div id="trackerShell" class="hidden">
+
+<div class="topbar">
+<div>
+<div class="brand-small">OTTERMODE</div>
+<h1>Daily Tracker</h1>
+</div>
+
+<div class="top-actions">
+<button class="theme-btn" id="themeIcon" type="button" aria-label="Themes">
+<span class="mono-icon icon-forest"></span>
+</button>
+
+<button class="action-btn" id="flipBtn" type="button">Flip</button>
+</div>
+</div>
+
+<!-- Theme menu -->
+<div class="theme-menu" id="themeMenu">
+<button class="theme-choice" type="button" data-theme="forest">
+<span class="mono-icon icon-forest"></span>Forest
+</button>
+
+<button class="theme-choice" type="button" data-theme="ocean">
+<span class="mono-icon icon-ocean"></span>Ocean
+</button>
+
+<button class="theme-choice" type="button" data-theme="desert">
+<span class="mono-icon icon-desert"></span>Desert
+</button>
+
+<button class="theme-choice" type="button" data-theme="stone">
+<span class="mono-icon icon-stone"></span>Stone
+</button>
+
+<button class="theme-choice" type="button" data-theme="neon">
+<span class="mono-icon icon-neon"></span>Neon
+</button>
+</div>
+
+<!-- Live tracking length select -->
+<div class="fast-row">
+<div class="select-box">
+<label>Tracking Length</label>
+
+<select id="fastType">
+<option value="40">40 Day</option>
+<option value="31">31 Day</option>
+<option value="21">21 Day</option>
+<option value="15">15 Day</option>
+<option value="7">7 Day</option>
+</select>
+</div>
+</div>
+
+<!-- =========================================================
+     SECTION: FRONT CARD HTML
+     ========================================================= -->
+
+<section class="card active" id="frontCard">
+
+<div class="card-header" id="frontHeader">
+<div class="card-title">
+<h2 id="frontTitle">40 DAY</h2>
+<p id="frontSubtitle">DAILY TRACKER</p>
+<p id="fastNameDisplay" style="margin-top:5px;font-size:10px;letter-spacing:1.5px;color:var(--accent);"></p>
+</div>
+
+<div class="target-badge">
+<strong id="targetLoss">40 DAYS</strong>
+<span>TARGET</span>
+</div>
+</div>
+
+<div class="card-body">
+
+<div class="hero-panel">
+
+<div class="otter-banner">
+<div>
+<div class="otter-title" id="currentDayTitle">DAY 1</div>
+<div class="otter-sub">DISCIPLINE. CONSISTENCY. FREEDOM.</div>
+</div>
+
+<div class="island-mark">ONE DAY<br>AT A TIME</div>
+</div>
+
+<div class="info-grid">
+
+<div class="info-cell">
+<label>Start Date</label>
+<input id="startDate" placeholder="5/7/26">
+</div>
+
+<div class="info-cell">
+<label>End Date</label>
+<input id="endDate" placeholder="Auto" readonly>
+</div>
+
+<div class="info-cell">
+<label>Start Weight</label>
+<input id="startWeight" inputmode="decimal" placeholder="169">
+</div>
+
+<div class="info-cell">
+<label>Goal Weight</label>
+<input id="goalWeight" inputmode="decimal" placeholder="Auto">
+</div>
+
+</div>
+</div>
+
+<!--
+DESIGNER NOTE:
+These are the three progress stat cards.
+
+Updated:
+- LBS TO GO compares latest logged weight to goal weight.
+- DAYS TO GO shows remaining unchecked days.
+- LAST LOG shows most recent daily weight.
+-->
+<div class="stat-row">
+
+<div class="stat-card">
+<small>LBS TO GO</small>
+<b id="lbsToGo">—</b>
+<small>FROM GOAL</small>
+</div>
+
+<div class="stat-card">
+<small>DAYS TO GO</small>
+<b id="daysToGo">—</b>
+<small>UNTIL FINISH</small>
+</div>
+
+<div class="stat-card">
+<small>LAST LOG</small>
+<b id="lastWeightMini">—</b>
+<small>LBS</small>
+</div>
+
+</div>
+
+<div class="focus-grid">
+
+<div class="box">
+<h3>Why I’m Doing This</h3>
+<textarea id="why" placeholder="Health. Freedom. Discipline. Future self."></textarea>
+</div>
+
+<div class="progress-panel">
+<small>PROGRESS</small>
+<div class="progress-number" id="completedText">0/40</div>
+<div class="bar"><div class="bar-fill" id="barFill"></div></div>
+<small id="latestWeight">Latest weight: — lbs</small>
+</div>
+
+</div>
+
+<div class="box" style="margin-top:10px;">
+<h3>Daily Focus</h3>
+
+<div class="check-list">
+<div><span class="fake-check">✓</span> Show up</div>
+<div><span class="fake-check">✓</span> Stay disciplined</div>
+<div><span class="fake-check">✓</span> Track honestly</div>
+<div><span class="fake-check">✓</span> Pray / reflect</div>
+<div><span class="fake-check">✓</span> Keep going</div>
+</div>
+</div>
+
+<div class="verse-card">
+<div class="verse-head">
+<span>VERSE FOR TODAY</span>
+<span id="verseDayLabel">DAY 1</span>
+</div>
+
+<div class="verse-body">
+<div class="verse-stage" id="verseStage">Humility</div>
+<div class="verse-title" id="verseTitle">Humble Yourself</div>
+<div class="verse-ref" id="verseReference">1 Peter 5:6 WEB</div>
+<div class="verse-text" id="verseText"></div>
+</div>
+</div>
+
+</div>
+
+<div class="footer-strip">
+<div>FOCUS</div>
+<div>DISCIPLINE</div>
+<div>REST</div>
+<div>FINISH</div>
+</div>
+
+</section>
+
+<!-- =========================================================
+     SECTION: BACK CARD HTML
+     ========================================================= -->
+
+<section class="card" id="backCard">
+
+<div class="card-header" id="backHeader">
+<div class="card-title">
+<h2 id="backTitle">40 DAY TRACKER</h2>
+<p>CHECK THE DAY. TAP A DAY TO EDIT.</p>
+</div>
+</div>
+
+<div class="card-body">
+
+<p class="help-text">Tap any day to check it off, log weight, add notes, or attach photo.</p>
+
+<div class="days-grid" id="daysGrid"></div>
+
+<div class="weight-log">
+<div class="section-title">DAILY WEIGHT LOG</div>
+<div class="weight-rows" id="weightRows"></div>
+</div>
+
+<div class="milestones" id="milestones"></div>
+
+<div class="refeed">
+<div class="refeed-title">SAFETY / WISDOM NOTE</div>
+<p>If this tracker is being used for fasting, training, or health goals, use wisdom, start slow when needed, and follow guidance from your physician or care team.</p>
+</div>
+
+</div>
+
+<div class="footer-strip">
+<div>TRACK</div>
+<div>REFLECT</div>
+<div>REST</div>
+<div>FAITH</div>
+</div>
+
+</section>
+
+<div class="bottom-actions">
+<button class="action-btn ghost-btn" id="historyBtn" type="button">History</button>
+<button class="action-btn" id="archiveBtn" type="button">Archive</button>
+<button class="action-btn ghost-btn" id="resetBtn" type="button">Reset</button>
+<div class="saved">Saved automatically on this phone. Photos are stored as app-optimized copies for APK readiness.</div>
+</div>
+
+</div>
+</div>
+
+<!-- =========================================================
+     SECTION: DAY EDITOR MODAL HTML
+     ========================================================= -->
+
+<div class="modal" id="dayModal">
+<div class="modal-card">
+
+<div class="modal-head">
+<h2 id="modalTitle">Day 1</h2>
+<button class="close-btn" id="closeModal" type="button">Done</button>
+</div>
+
+<div class="modal-body">
+
+<button class="big-check" id="modalComplete" type="button">Mark Complete</button>
+
+<label>Daily Weight</label>
+<input id="modalWeight" inputmode="decimal" placeholder="Enter weight">
+
+<label>Daily Notes</label>
+<textarea id="modalNote" placeholder="How did today go? Energy, prayer, walking, mindset, wins..."></textarea>
+
+<div class="media-actions">
+<label class="media-btn" for="cameraInput">Take Photo</label>
+<label class="media-btn" for="uploadInput">Upload Photo</label>
+</div>
+
+<input id="cameraInput" class="hidden-input" type="file" accept="image/*" capture="environment">
+<input id="uploadInput" class="hidden-input" type="file" accept="image/*">
+
+<div class="media-preview" id="mediaPreview"></div>
+
+</div>
+</div>
+</div>
+
+<!-- =========================================================
+     SECTION: HISTORY MODALS HTML
+     ========================================================= -->
+
+<div class="modal" id="historyModal">
+<div class="modal-card">
+
+<div class="modal-head">
+<h2>History</h2>
+<button class="close-btn" id="closeHistory" type="button">Done</button>
+</div>
+
+<div class="modal-body">
+<div id="historyList" class="history-list"></div>
+</div>
+
+</div>
+</div>
+
+<div class="modal" id="archiveViewModal">
+<div class="modal-card">
+
+<div class="modal-head">
+<h2 id="archiveViewTitle">Archived Goal</h2>
+<button class="close-btn" id="closeArchiveView" type="button">Done</button>
+</div>
+
+<div class="modal-body" id="archiveViewBody"></div>
+
+</div>
+</div>
+
+<script>
+
+/* =========================================================
+   SECTION: JAVASCRIPT DESIGNER INTRO
+
+   DESIGNER NOTE:
+   JavaScript makes the app work.
+
+   A few important words:
+   const = a value that does not get reassigned
+   let   = a value that can change
+   function = a reusable action
+   state = the current saved app data
+   ========================================================= */
+
+/* =========================================================
+   SECTION: TRACKING PLAN SETTINGS
+
+   DESIGNER NOTE:
+   This object controls the tracking length options.
+
+   To edit a plan:
+   - title = big title on the front card
+   - backTitle = title on the back card
+   - subtitle = small text under title
+   - days = how many days show
+   - target = small target badge
+   - milestones = round milestone badges
+   - color = default theme when starting this length
+   ========================================================= */
+
+const plans = {
+  "40": {
+    title:"40 DAY",
+    backTitle:"40 DAY TRACKER",
+    subtitle:"DAILY TRACKER",
+    days:40,
+    target:"40 DAYS",
+    milestones:[
+      [3,"GETTING STARTED"],
+      [7,"ONE WEEK STRONG"],
+      [14,"BUILDING RHYTHM"],
+      [21,"STANDING FIRM"],
+      [30,"ALMOST THERE"],
+      [40,"MISSION COMPLETE"]
+    ],
+    color:"forest"
+  },
+
+  "31": {
+    title:"31 DAY",
+    backTitle:"31 DAY TRACKER",
+    subtitle:"DAILY TRACKER",
+    days:31,
+    target:"31 DAYS",
+    milestones:[
+      [3,"GETTING STARTED"],
+      [7,"ONE WEEK STRONG"],
+      [14,"HALFWAY RHYTHM"],
+      [21,"STANDING FIRM"],
+      [31,"MISSION COMPLETE"]
+    ],
+    color:"desert"
+  },
+
+  "21": {
+    title:"21 DAY",
+    backTitle:"21 DAY TRACKER",
+    subtitle:"DAILY TRACKER",
+    days:21,
+    target:"21 DAYS",
+    milestones:[
+      [3,"MOMENTUM"],
+      [7,"ADAPTATION"],
+      [14,"HALFWAY"],
+      [21,"MISSION COMPLETE"]
+    ],
+    color:"ocean"
+  },
+
+  "15": {
+    title:"15 DAY",
+    backTitle:"15 DAY TRACKER",
+    subtitle:"DAILY TRACKER",
+    days:15,
+    target:"15 DAYS",
+    milestones:[
+      [3,"STAYING STRONG"],
+      [8,"HALFWAY"],
+      [15,"MISSION COMPLETE"]
+    ],
+    color:"stone"
+  },
+
+  "7": {
+    title:"7 DAY",
+    backTitle:"7 DAY TRACKER",
+    subtitle:"DAILY TRACKER",
+    days:7,
+    target:"7 DAYS",
+    milestones:[
+      [3,"LOCKED IN"],
+      [7,"MISSION COMPLETE"]
+    ],
+    color:"neon"
+  }
+};
+
+/* =========================================================
+   SECTION: DAILY VERSES
+
+   DESIGNER NOTE:
+   This is the built-in verse list.
+
+   These are WEB verses.
+   Each verse has:
+   day, stage, title, reference, text
+   ========================================================= */
+
+const dailyVerses = [
+  {day:1,stage:"Humility",title:"Humble Yourself",reference:"1 Peter 5:6 WEB",text:"Humble yourselves therefore under the mighty hand of God, that he may exalt you in due time;"},
+  {day:2,stage:"Resistance",title:"Joy in Resistance",reference:"James 1:2-4 WEB",text:"Count it all joy, my brothers, when you fall into various temptations, knowing that the testing of your faith produces endurance. Let endurance have its perfect work, that you may be perfect and complete, lacking in nothing."},
+  {day:3,stage:"Persistence",title:"Endure Testing",reference:"James 1:12 WEB",text:"Blessed is a person who endures temptation, for when he has been approved, he will receive the crown of life, which the Lord promised to those who love him."},
+  {day:4,stage:"Surrender",title:"Seek First",reference:"Matthew 6:33 WEB",text:"But seek first God’s Kingdom and his righteousness; and all these things will be given to you as well."},
+  {day:5,stage:"Discipline",title:"Offer Your Body",reference:"Romans 12:1 WEB",text:"Therefore I urge you, brothers, by the mercies of God, to present your bodies a living sacrifice, holy, acceptable to God, which is your spiritual service."},
+  {day:6,stage:"Resistance",title:"Resist the Devil",reference:"James 4:7 WEB",text:"Be subject therefore to God. Resist the devil, and he will flee from you."},
+  {day:7,stage:"Self-Control",title:"A Sound Mind",reference:"2 Timothy 1:7 WEB",text:"For God didn’t give us a spirit of fear, but of power, love, and self-control."},
+  {day:8,stage:"Endurance",title:"Run with Patience",reference:"Hebrews 12:1 WEB",text:"Therefore let’s also, seeing we are surrounded by so great a cloud of witnesses, lay aside every weight and the sin which so easily entangles us, and let’s run with perseverance the race that is set before us,"},
+  {day:9,stage:"Humility",title:"God Gives Grace",reference:"James 4:10 WEB",text:"Humble yourselves in the sight of the Lord, and he will exalt you."},
+  {day:10,stage:"Strength",title:"Strength in Weakness",reference:"2 Corinthians 12:9 WEB",text:"He has said to me, “My grace is sufficient for you, for my power is made perfect in weakness.” Most gladly therefore I will rather glory in my weaknesses, that the power of Christ may rest on me."},
+  {day:11,stage:"Standing Firm",title:"Don’t Grow Weary",reference:"Galatians 6:9 WEB",text:"Let’s not be weary in doing good, for we will reap in due season if we don’t give up."},
+  {day:12,stage:"Standing Firm",title:"Be Steadfast",reference:"1 Corinthians 15:58 WEB",text:"Therefore, my beloved brothers, be steadfast, immovable, always abounding in the Lord’s work, because you know that your labor is not in vain in the Lord."},
+  {day:13,stage:"Moving Forward",title:"Press On",reference:"Philippians 3:13-14 WEB",text:"Brothers, I don’t regard myself as yet having taken hold, but one thing I do: forgetting the things which are behind and stretching forward to the things which are before, I press on toward the goal for the prize of the high calling of God in Christ Jesus."},
+  {day:14,stage:"Strength",title:"Renewed Strength",reference:"Isaiah 40:31 WEB",text:"But those who wait for Yahweh will renew their strength. They will mount up with wings like eagles. They will run, and not be weary. They will walk, and not faint."},
+  {day:15,stage:"Courage",title:"Be Strong",reference:"Joshua 1:9 WEB",text:"Haven’t I commanded you? Be strong and courageous. Don’t be afraid. Don’t be dismayed, for Yahweh your God is with you wherever you go."},
+  {day:16,stage:"Trust",title:"He Directs Your Paths",reference:"Proverbs 3:5-6 WEB",text:"Trust in Yahweh with all your heart, and don’t lean on your own understanding. In all your ways acknowledge him, and he will make your paths straight."},
+  {day:17,stage:"Patience",title:"Wait for Him",reference:"Psalm 27:14 WEB",text:"Wait for Yahweh. Be strong, and let your heart take courage. Yes, wait for Yahweh."},
+  {day:18,stage:"Standing Firm",title:"Stand Your Ground",reference:"Ephesians 6:13 WEB",text:"Therefore put on the whole armor of God, that you may be able to withstand in the evil day, and, having done all, to stand."},
+  {day:19,stage:"Perseverance",title:"Character and Hope",reference:"Romans 5:3-4 WEB",text:"Not only this, but we also rejoice in our sufferings, knowing that suffering produces perseverance; and perseverance, proven character; and proven character, hope;"},
+  {day:20,stage:"Focus",title:"Look to Jesus",reference:"Hebrews 12:2 WEB",text:"looking to Jesus, the author and perfecter of faith, who for the joy that was set before him endured the cross, despising its shame, and has sat down at the right hand of the throne of God."},
+  {day:21,stage:"Strength",title:"I Can Do All Things",reference:"Philippians 4:13 WEB",text:"I can do all things through Christ, who strengthens me."},
+  {day:22,stage:"Peace",title:"Do Not Be Anxious",reference:"Philippians 4:6-7 WEB",text:"In nothing be anxious, but in everything, by prayer and petition with thanksgiving, let your requests be made known to God. And the peace of God, which surpasses all understanding, will guard your hearts and your thoughts in Christ Jesus."},
+  {day:23,stage:"Provision",title:"God Supplies",reference:"Philippians 4:19 WEB",text:"My God will supply every need of yours according to his riches in glory in Christ Jesus."},
+  {day:24,stage:"Endurance",title:"The Lord is Your Strength",reference:"Psalm 28:7 WEB",text:"Yahweh is my strength and my shield. My heart has trusted in him, and I am helped. Therefore my heart greatly rejoices. With my song I will thank him."},
+  {day:25,stage:"Endurance",title:"Run to Win",reference:"1 Corinthians 9:24 WEB",text:"Don’t you know that those who run in a race all run, but one receives the prize? Run like that, that you may win."},
+  {day:26,stage:"Overcoming",title:"More Than Conquerors",reference:"Romans 8:37 WEB",text:"No, in all these things we are more than conquerors through him who loved us."},
+  {day:27,stage:"Faith",title:"Faith is Victory",reference:"1 John 5:4 WEB",text:"For whatever is born of God overcomes the world. This is the victory that has overcome the world: your faith."},
+  {day:28,stage:"Maturity",title:"Complete in Endurance",reference:"James 1:4 WEB",text:"Let endurance have its perfect work, that you may be perfect and complete, lacking in nothing."},
+  {day:29,stage:"Courage",title:"The Lord is With You",reference:"Deuteronomy 31:6 WEB",text:"Be strong and courageous. Don’t be afraid or scared of them, for Yahweh your God himself is who goes with you. He will not fail you nor forsake you."},
+  {day:30,stage:"Hope",title:"Hope in God",reference:"Psalm 42:11 WEB",text:"Why are you in despair, my soul? Why are you disturbed within me? Hope in God! For I shall still praise him, the saving help of my countenance, and my God."},
+  {day:31,stage:"Strength",title:"God is Your Refuge",reference:"Psalm 46:1 WEB",text:"God is our refuge and strength, a very present help in trouble."},
+  {day:32,stage:"Firmness",title:"He Establishes You",reference:"2 Thessalonians 3:3 WEB",text:"But the Lord is faithful, who will establish you and guard you from the evil one."},
+  {day:33,stage:"Faithfulness",title:"Hold Fast",reference:"Hebrews 10:23 WEB",text:"Let’s hold fast the confession of our hope without wavering; for he who promised is faithful."},
+  {day:34,stage:"Finishing",title:"Do Not Throw Away Confidence",reference:"Hebrews 10:35-36 WEB",text:"Therefore don’t throw away your boldness, which has a great reward. For you need endurance so that, having done the will of God, you may receive the promise."},
+  {day:35,stage:"Strength",title:"The Battle is the Lord’s",reference:"2 Chronicles 20:17 WEB",text:"You will not need to fight this battle. Set yourselves, stand still, and see the salvation of Yahweh with you, Judah and Jerusalem. Don’t be afraid, nor be dismayed. Go out against them tomorrow, for Yahweh is with you."},
+  {day:36,stage:"Victory",title:"Thanks Be to God",reference:"1 Corinthians 15:57 WEB",text:"But thanks be to God, who gives us the victory through our Lord Jesus Christ."},
+  {day:37,stage:"Completion",title:"Finish the Race",reference:"2 Timothy 4:7 WEB",text:"I have fought the good fight. I have finished the course. I have kept the faith."},
+  {day:38,stage:"Glory to God",title:"Not to Us",reference:"Psalm 115:1 WEB",text:"Not to us, Yahweh, not to us, but to your name give glory, for your loving kindness, and for your truth’s sake."},
+  {day:39,stage:"Gratitude",title:"Great Things",reference:"Psalm 126:3 WEB",text:"Yahweh has done great things for us, and we are glad."},
+  {day:40,stage:"Victory",title:"Glory to Him",reference:"Romans 11:36 WEB",text:"For of him, and through him, and to him are all things. To him be the glory for ever! Amen."}
+];
+
+/* =========================================================
+   SECTION: STORAGE KEYS
+
+   DESIGNER NOTE:
+   Changing these starts the app fresh because it looks in a new
+   storage bucket.
+
+   v15 includes the LBS TO GO / DAYS TO GO update.
+   ========================================================= */
+
+const storageKey = "ottermode_daily_tracker_current_v15";
+const historyKey = "ottermode_daily_tracker_history_v15";
+
+/* =========================================================
+   SECTION: ELEMENT REFERENCES
+
+   DESIGNER NOTE:
+   These lines grab HTML elements by ID so JavaScript can edit them.
+   ========================================================= */
+
+const startScreen = document.getElementById("startScreen");
+const trackerShell = document.getElementById("trackerShell");
+const setupFastName = document.getElementById("setupFastName");
+const setupStartDate = document.getElementById("setupStartDate");
+const setupFastType = document.getElementById("setupFastType");
+const setupStartWeight = document.getElementById("setupStartWeight");
+const startFastBtn = document.getElementById("startFastBtn");
+
+const frontCard = document.getElementById("frontCard");
+const backCard = document.getElementById("backCard");
+const flipBtn = document.getElementById("flipBtn");
+const resetBtn = document.getElementById("resetBtn");
+const archiveBtn = document.getElementById("archiveBtn");
+const historyBtn = document.getElementById("historyBtn");
+
+const themeIcon = document.getElementById("themeIcon");
+const themeMenu = document.getElementById("themeMenu");
+const fastType = document.getElementById("fastType");
+
+const frontTitle = document.getElementById("frontTitle");
+const backTitle = document.getElementById("backTitle");
+const frontSubtitle = document.getElementById("frontSubtitle");
+const targetLoss = document.getElementById("targetLoss");
+const currentDayTitle = document.getElementById("currentDayTitle");
+const fastNameDisplay = document.getElementById("fastNameDisplay");
+
+const daysGrid = document.getElementById("daysGrid");
+const weightRows = document.getElementById("weightRows");
+const milestonesDiv = document.getElementById("milestones");
+
+const completedText = document.getElementById("completedText");
+const barFill = document.getElementById("barFill");
+const latestWeight = document.getElementById("latestWeight");
+const lastWeightMini = document.getElementById("lastWeightMini");
+const lbsToGo = document.getElementById("lbsToGo");
+const daysToGo = document.getElementById("daysToGo");
+
+const verseDayLabel = document.getElementById("verseDayLabel");
+const verseStage = document.getElementById("verseStage");
+const verseTitle = document.getElementById("verseTitle");
+const verseReference = document.getElementById("verseReference");
+const verseText = document.getElementById("verseText");
+
+const dayModal = document.getElementById("dayModal");
+const modalTitle = document.getElementById("modalTitle");
+const closeModal = document.getElementById("closeModal");
+const modalComplete = document.getElementById("modalComplete");
+const modalWeight = document.getElementById("modalWeight");
+const modalNote = document.getElementById("modalNote");
+
+const cameraInput = document.getElementById("cameraInput");
+const uploadInput = document.getElementById("uploadInput");
+const mediaPreview = document.getElementById("mediaPreview");
+
+const historyModal = document.getElementById("historyModal");
+const closeHistory = document.getElementById("closeHistory");
+const historyList = document.getElementById("historyList");
+
+const archiveViewModal = document.getElementById("archiveViewModal");
+const closeArchiveView = document.getElementById("closeArchiveView");
+const archiveViewTitle = document.getElementById("archiveViewTitle");
+const archiveViewBody = document.getElementById("archiveViewBody");
+
+/* =========================================================
+   SECTION: APP STATE
+
+   DESIGNER NOTE:
+   state stores the current tracker data.
+   side stores whether the card is on front/back.
+   activeDayIndex stores which day popup is open.
+   ========================================================= */
+
+let side = "front";
+let activeDayIndex = null;
+let state = loadState();
+
+/* =========================================================
+   SECTION: LOAD / SAVE
+   ========================================================= */
+
+function loadState(){
+  const saved = localStorage.getItem(storageKey);
+
+  if(saved){
+    try{
+      return JSON.parse(saved);
+    }catch(e){}
+  }
+
+  return makeNewState("40", false);
+}
+
+function loadHistory(){
+  const saved = localStorage.getItem(historyKey);
+
+  if(saved){
+    try{
+      return JSON.parse(saved);
+    }catch(e){}
+  }
+
+  return [];
+}
+
+function saveHistory(list){
+  localStorage.setItem(historyKey,JSON.stringify(list));
+}
+
+function save(){
+  try{
+    localStorage.setItem(storageKey,JSON.stringify(state));
+    updateProgress();
+  }catch(err){
+    alert("Storage is full. Try deleting one or more photos, then save again.");
+  }
+}
+
+/* =========================================================
+   SECTION: STATE CREATION
+
+   DESIGNER NOTE:
+   The app always stores 40 possible days.
+   Shorter trackers simply show fewer days.
+   This is why switching length does not erase hidden day data.
+   ========================================================= */
+
+function makeNewState(type, hasStarted){
+  const plan = plans[type];
+
+  return {
+    id:Date.now(),
+    hasStarted:hasStarted,
+    fastName:"",
+    fastType:type,
+    themeType:plan.color,
+    startDate:"",
+    endDate:"",
+    startWeight:"",
+    goalWeight:"",
+    why:"Health. Freedom. Discipline. Future self.",
+    days:Array.from({length:40},(_,i)=>({
+      day:i+1,
+      complete:false,
+      weight:"",
+      note:"",
+      media:null
+    }))
+  };
+}
+
+/* =========================================================
+   SECTION: DATE AND WEIGHT AUTO-CALCULATION
+
+   End date rule:
+   Start Date + Tracking Length - 1 day
+
+   Goal weight rule:
+   Start Weight - number of days
+   ========================================================= */
+
+function parseDateInput(value){
+  if(!value || !value.trim()) return null;
+
+  const raw = value.trim();
+
+  if(raw.includes("-")){
+    const parts = raw.split("-");
+    if(parts.length === 3){
+      const y = Number(parts[0]);
+      const m = Number(parts[1]) - 1;
+      const d = Number(parts[2]);
+      const date = new Date(y,m,d);
+      if(!isNaN(date)) return date;
+    }
+  }
+
+  const slash = raw.split("/");
+  if(slash.length === 3){
+    let m = Number(slash[0]) - 1;
+    let d = Number(slash[1]);
+    let y = Number(slash[2]);
+
+    if(y < 100){
+      y += 2000;
+    }
+
+    const date = new Date(y,m,d);
+    if(!isNaN(date)) return date;
+  }
+
+  const fallback = new Date(raw);
+  if(!isNaN(fallback)) return fallback;
+
+  return null;
+}
+
+function formatDate(date){
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  const y = String(date.getFullYear()).slice(-2);
+
+  return m + "/" + d + "/" + y;
+}
+
+function calculateEndDate(startDateValue, type){
+  const date = parseDateInput(startDateValue);
+  if(!date) return "";
+
+  const days = plans[type].days;
+  const end = new Date(date);
+  end.setDate(end.getDate() + days - 1);
+
+  return formatDate(end);
+}
+
+function calculateGoalWeight(startWeightValue, type){
+  const weight = parseFloat(startWeightValue);
+
+  if(isNaN(weight)) return "";
+
+  const days = plans[type].days;
+  const goal = weight - days;
+
+  return String(Math.round(goal * 10) / 10);
+}
+
+function recalculateAutoFields(){
+  state.endDate = calculateEndDate(state.startDate,state.fastType);
+
+  if(state.startWeight && state.startWeight.trim() !== ""){
+    state.goalWeight = calculateGoalWeight(state.startWeight,state.fastType);
+  }
+
+  const endEl = document.getElementById("endDate");
+  const goalEl = document.getElementById("goalWeight");
+
+  if(endEl){
+    endEl.value = state.endDate || "";
+  }
+
+  if(goalEl){
+    goalEl.value = state.goalWeight || "";
+  }
+}
+
+/* =========================================================
+   SECTION: START TRACKER
+   ========================================================= */
+
+function startFast(){
+  const selectedType = setupFastType.value;
+  const plan = plans[selectedType];
+
+  state = makeNewState(selectedType, true);
+
+  state.fastName = setupFastName.value.trim();
+  state.startDate = setupStartDate.value.trim();
+  state.startWeight = setupStartWeight.value.trim();
+  state.fastType = selectedType;
+  state.themeType = plan.color;
+
+  state.endDate = calculateEndDate(state.startDate,state.fastType);
+  state.goalWeight = calculateGoalWeight(state.startWeight,state.fastType);
+
+  try{
+    localStorage.setItem(storageKey,JSON.stringify(state));
+  }catch(err){
+    alert("Could not start because browser storage is full. Clear old browser data or remove older tracker data.");
+    return;
+  }
+
+  showAppMode();
+  applyPlan();
+  showSide("front");
+}
+
+/* =========================================================
+   SECTION: SHOW START SCREEN OR TRACKER
+   ========================================================= */
+
+function showAppMode(){
+  if(state.hasStarted){
+    startScreen.classList.add("hidden");
+    trackerShell.classList.remove("hidden");
+  }else{
+    trackerShell.classList.add("hidden");
+    startScreen.classList.remove("hidden");
+    setupFastType.value = state.fastType || "40";
+  }
+}
+
+/* =========================================================
+   SECTION: CHANGE TRACKING LENGTH WITHOUT ERASING DATA
+   ========================================================= */
+
+function changeFastLength(newType){
+  state.fastType = newType;
+
+  recalculateAutoFields();
+
+  save();
+  applyPlan();
+  showSide("front");
+}
+
+function getActiveDays(){
+  const plan = plans[state.fastType];
+  return state.days.slice(0,plan.days);
+}
+
+/* =========================================================
+   SECTION: VIEW SWITCHING / THEME
+   ========================================================= */
+
+function showSide(which){
+  side = which;
+
+  if(side === "front"){
+    frontCard.classList.add("active");
+    backCard.classList.remove("active");
+    flipBtn.textContent = "Flip";
+  }else{
+    frontCard.classList.remove("active");
+    backCard.classList.add("active");
+    flipBtn.textContent = "Flip";
+  }
+
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function setTheme(theme){
+  document.body.className = "theme-" + theme;
+  themeIcon.innerHTML = '<span class="mono-icon icon-' + theme + '"></span>';
+}
+
+/* =========================================================
+   SECTION: APPLY PLAN
+
+   DESIGNER NOTE:
+   This updates the screen whenever the selected length/theme/data changes.
+   ========================================================= */
+
+function applyPlan(){
+  const plan = plans[state.fastType];
+
+  fastType.value = state.fastType;
+  setTheme(state.themeType || plan.color);
+
+  frontTitle.textContent = plan.title;
+  backTitle.textContent = plan.backTitle;
+  frontSubtitle.textContent = plan.subtitle;
+  targetLoss.textContent = plan.target;
+
+  fastNameDisplay.textContent = state.fastName ? state.fastName.toUpperCase() : "";
+
+  recalculateAutoFields();
+
+  document.getElementById("startDate").value = state.startDate || "";
+  document.getElementById("endDate").value = state.endDate || "";
+  document.getElementById("startWeight").value = state.startWeight || "";
+  document.getElementById("goalWeight").value = state.goalWeight || "";
+  document.getElementById("why").value = state.why || "";
+
+  buildDays();
+  buildWeights();
+  buildMilestones();
+  updateProgress();
+}
+
+/* =========================================================
+   SECTION: CURRENT DAY / VERSE LOGIC
+   ========================================================= */
+
+function getCurrentDay(){
+  const plan = plans[state.fastType];
+  const activeDays = getActiveDays();
+  const complete = activeDays.filter(d=>d.complete).length;
+
+  return Math.min(Math.max(complete + 1, 1), plan.days);
+}
+
+function getVerseDay(){
+  const activeDays = getActiveDays();
+  const complete = activeDays.filter(d=>d.complete).length;
+
+  return Math.min(Math.max(complete + 1, 1), 40);
+}
+
+function updateVerse(){
+  const dayNumber = getVerseDay();
+  const verse = dailyVerses[dayNumber - 1];
+
+  verseDayLabel.textContent = "DAY " + dayNumber;
+  verseStage.textContent = verse.stage;
+  verseTitle.textContent = verse.title;
+  verseReference.textContent = verse.reference;
+  verseText.textContent = verse.text;
+}
+
+/* =========================================================
+   SECTION: UPDATE PROGRESS
+
+   DESIGNER NOTE:
+   This updates:
+   - big DAY title
+   - 0/40 progress number
+   - progress bar width
+   - latest weight
+   - LBS TO GO
+   - DAYS TO GO
+   - milestones
+   - verse
+   ========================================================= */
+
+function updateProgress(){
+  if(!state.hasStarted) return;
+
+  const plan = plans[state.fastType];
+  const activeDays = getActiveDays();
+  const complete = activeDays.filter(d=>d.complete).length;
+  const percent = Math.round((complete / plan.days) * 100);
+  const currentDay = getCurrentDay();
+
+  currentDayTitle.textContent = "DAY " + currentDay;
+
+  completedText.textContent = complete + "/" + plan.days;
+  barFill.style.width = percent + "%";
+
+  /*
+  DESIGNER NOTE:
+  This block updates the three big stat cards.
+
+  LAST LOG:
+  Most recent daily weight entered.
+
+  LBS TO GO:
+  Latest logged weight - goal weight.
+  Example: 320 - 280 = 40
+
+  DAYS TO GO:
+  Total days - completed days.
+  Example: 40 - 1 = 39
+  */
+
+  const weights = activeDays.filter(d=>d.weight && d.weight.trim() !== "");
+  const last = weights.length ? weights[weights.length - 1].weight : "—";
+
+  latestWeight.textContent = "Latest weight: " + last + " lbs";
+  lastWeightMini.textContent = last;
+
+  const latestNumber = parseFloat(last);
+  const goalNumber = parseFloat(state.goalWeight);
+  const daysRemaining = Math.max(plan.days - complete, 0);
+
+  daysToGo.textContent = daysRemaining;
+
+  if(!isNaN(latestNumber) && !isNaN(goalNumber)){
+    const poundsRemaining = Math.max(latestNumber - goalNumber, 0);
+    lbsToGo.textContent = Math.round(poundsRemaining * 10) / 10;
+  }else{
+    lbsToGo.textContent = "—";
+  }
+
+  document.querySelectorAll(".milestone").forEach(el=>{
+    const day = Number(el.dataset.day);
+    el.classList.toggle("hit",complete >= day);
+  });
+
+  updateVerse();
+}
+
+/* =========================================================
+   SECTION: BUILD DAY GRID
+   ========================================================= */
+
+function buildDays(){
+  const plan = plans[state.fastType];
+  const visibleDays = getActiveDays();
+
+  daysGrid.innerHTML = "";
+
+  visibleDays.forEach((d,i)=>{
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "day-cell" + (d.complete ? " done" : "") + (d.media ? " has-media" : "");
+
+    const label = document.createElement("div");
+    label.className = "day-label";
+    label.textContent = "DAY " + d.day;
+
+    const box = document.createElement("div");
+    box.className = "day-box";
+    box.textContent = d.complete ? "✓" : "";
+
+    const milestone = plan.milestones.find(m=>m[0] === d.day);
+
+    const note = document.createElement("div");
+    note.className = "milestone-note";
+    note.textContent = d.media ? "MEDIA" : milestone ? "★ " + milestone[1] : "";
+
+    btn.appendChild(label);
+    btn.appendChild(box);
+
+    if(note.textContent){
+      btn.appendChild(note);
+    }
+
+    btn.addEventListener("click",()=>{
+      openDayModal(i);
+    });
+
+    daysGrid.appendChild(btn);
+  });
+}
+
+/* =========================================================
+   SECTION: BUILD WEIGHT LOG
+   ========================================================= */
+
+function buildWeights(){
+  const visibleDays = getActiveDays();
+
+  weightRows.innerHTML = "";
+
+  visibleDays.forEach((d,i)=>{
+    const row = document.createElement("div");
+    row.className = "weight-row";
+
+    const label = document.createElement("span");
+    label.textContent = "D" + d.day;
+
+    const weightInput = document.createElement("input");
+    weightInput.placeholder = "lbs";
+    weightInput.inputMode = "decimal";
+    weightInput.value = d.weight || "";
+
+    const noteInput = document.createElement("input");
+    noteInput.placeholder = "note";
+    noteInput.value = d.note || "";
+
+    weightInput.addEventListener("input",()=>{
+      state.days[i].weight = weightInput.value;
+      save();
+    });
+
+    noteInput.addEventListener("input",()=>{
+      state.days[i].note = noteInput.value;
+      try{
+        localStorage.setItem(storageKey,JSON.stringify(state));
+      }catch(err){
+        alert("Storage is full. Try deleting one or more photos.");
+      }
+    });
+
+    row.appendChild(label);
+    row.appendChild(weightInput);
+    row.appendChild(noteInput);
+    weightRows.appendChild(row);
+  });
+}
+
+/* =========================================================
+   SECTION: MILESTONES / DAY MODAL
+   ========================================================= */
+
+function buildMilestones(){
+  const plan = plans[state.fastType];
+
+  milestonesDiv.innerHTML = "";
+
+  plan.milestones.forEach(([day,text])=>{
+    const div = document.createElement("div");
+    div.className = "milestone";
+    div.dataset.day = day;
+    div.innerHTML = "★<br>DAY " + day + "<br><span>" + text + "</span>";
+    milestonesDiv.appendChild(div);
+  });
+}
+
+function openDayModal(index){
+  activeDayIndex = index;
+  const day = state.days[index];
+
+  modalTitle.textContent = "Day " + day.day;
+
+  modalComplete.textContent = day.complete ? "✓ Complete" : "Mark Complete";
+  modalComplete.classList.toggle("done",day.complete);
+
+  modalWeight.value = day.weight || "";
+  modalNote.value = day.note || "";
+
+  renderMediaPreview();
+  dayModal.classList.add("open");
+}
+
+function closeDayEditor(){
+  activeDayIndex = null;
+  dayModal.classList.remove("open");
+  buildDays();
+  buildWeights();
+  updateProgress();
+}
+
+/* =========================================================
+   SECTION: MEDIA PREVIEW
+   ========================================================= */
+
+function renderMediaPreview(){
+  mediaPreview.innerHTML = "";
+
+  if(activeDayIndex === null){
+    return;
+  }
+
+  const day = state.days[activeDayIndex];
+
+  if(!day.media){
+    const empty = document.createElement("div");
+    empty.className = "media-item";
+    empty.textContent = "No photo yet";
+    mediaPreview.appendChild(empty);
+    return;
+  }
+
+  const item = document.createElement("div");
+  item.className = "media-item";
+
+  if(day.media.type && day.media.type.startsWith("image/")){
+    const img = document.createElement("img");
+    img.src = day.media.data;
+    item.appendChild(img);
+  }else{
+    item.textContent = day.media.name || "Photo added";
+  }
+
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "action-btn ghost-btn trash-btn";
+  remove.textContent = "🗑";
+  remove.title = "Delete photo";
+
+  remove.addEventListener("click",()=>{
+    const ok = confirm("Are you sure you want to delete this photo?");
+    if(!ok) return;
+
+    state.days[activeDayIndex].media = null;
+    save();
+    renderMediaPreview();
+    buildDays();
+  });
+
+  mediaPreview.appendChild(item);
+  mediaPreview.appendChild(remove);
+}
+
+/* =========================================================
+   SECTION: PHOTO COMPRESSION - APK OPTIMIZED
+
+   DESIGNER NOTE:
+   This is where photos get resized and compressed.
+
+   It keeps the whole image.
+   It does NOT crop the photo.
+
+   Future APK note:
+   In a production APK, we can later store real image files
+   instead of putting image data in localStorage.
+   ========================================================= */
+
+function compressImage(file, callback){
+  const reader = new FileReader();
+
+  reader.onload = function(event){
+    const img = new Image();
+
+    img.onload = function(){
+      let maxSize = 360;
+      let quality = 0.42;
+      let compressedData = "";
+
+      function makeCompressed(size, q){
+        let width = img.width;
+        let height = img.height;
+
+        const ratio = Math.min(size / width, size / height, 1);
+
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0,0,width,height);
+
+        ctx.drawImage(img,0,0,width,height);
+
+        return canvas.toDataURL("image/jpeg",q);
+      }
+
+      compressedData = makeCompressed(maxSize,quality);
+
+      while(compressedData.length > 95000 && quality > 0.18){
+        quality -= 0.06;
+        compressedData = makeCompressed(maxSize,quality);
+      }
+
+      while(compressedData.length > 95000 && maxSize > 220){
+        maxSize -= 40;
+        quality = 0.28;
+        compressedData = makeCompressed(maxSize,quality);
+      }
+
+      if(compressedData.length > 120000){
+        maxSize = 200;
+        quality = 0.22;
+        compressedData = makeCompressed(maxSize,quality);
+      }
+
+      if(compressedData.length > 160000){
+        alert("This image is still too large to save. Try a screenshot of the photo, or crop it smaller before uploading.");
+        return;
+      }
+
+      callback({
+        name:file.name || "daily-photo.jpg",
+        type:"image/jpeg",
+        data:compressedData,
+        optimized:true,
+        apkReady:true,
+        savedNote:"Saved as an app-optimized photo copy."
+      });
+    };
+
+    img.onerror = function(){
+      alert("This photo could not be loaded. Try taking a new photo or choosing a different image.");
+    };
+
+    img.src = event.target.result;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function handlePhotoFile(file){
+  if(activeDayIndex === null) return;
+
+  if(!file){
+    return;
+  }
+
+  if(file.type && file.type.startsWith("image/")){
+    compressImage(file,function(media){
+      const backup = state.days[activeDayIndex].media;
+
+      state.days[activeDayIndex].media = media;
+
+      try{
+        localStorage.setItem(storageKey,JSON.stringify(state));
+        renderMediaPreview();
+        buildDays();
+        updateProgress();
+
+        alert("Photo saved as an app-optimized copy.");
+      }catch(err){
+        state.days[activeDayIndex].media = backup;
+
+        alert(
+          "This photo could not be saved because storage is full. " +
+          "Delete an older photo or archive/reset the tracker. " +
+          "When this becomes a full APK, we can upgrade to real file storage."
+        );
+      }
+    });
+
+    return;
+  }
+
+  alert("Please choose or take a photo.");
+}
+
+/* =========================================================
+   SECTION: ARCHIVE HELPERS
+   ========================================================= */
+
+function getFirstWeight(days){
+  const found = days.find(d=>d.weight && d.weight.trim() !== "");
+  return found ? found.weight : "—";
+}
+
+function getLastWeight(days){
+  const weights = days.filter(d=>d.weight && d.weight.trim() !== "");
+  return weights.length ? weights[weights.length - 1].weight : "—";
+}
+
+function getFirstPhoto(days){
+  const found = days.find(d=>d.media);
+  return found ? found.media : null;
+}
+
+function getLastPhoto(days){
+  const photos = days.filter(d=>d.media);
+  return photos.length ? photos[photos.length - 1].media : null;
+}
+
+function photoBlock(media,label){
+  if(!media){
+    return "<div class='archive-photo'>" + label + "<br>No photo</div>";
+  }
+
+  return "<div class='archive-photo'><img src='" + media.data + "'></div>";
+}
+
+/* =========================================================
+   SECTION: ARCHIVE
+   ========================================================= */
+
+function archiveCurrentFast(){
+  const activeDays = getActiveDays();
+  const complete = activeDays.filter(d=>d.complete).length;
+  const plan = plans[state.fastType];
+
+  const ok = confirm("Archive this tracker? It will be saved in History and you will return to the Start screen.");
+  if(!ok) return;
+
+  const currentBackup = JSON.parse(JSON.stringify(state));
+  const archived = JSON.parse(JSON.stringify(state));
+
+  archived.days = JSON.parse(JSON.stringify(activeDays));
+  archived.archivedAt = new Date().toLocaleString();
+  archived.completedCount = complete;
+  archived.planDays = plan.days;
+  archived.planTitle = plan.title;
+
+  const history = loadHistory();
+  history.unshift(archived);
+
+  try{
+    localStorage.removeItem(storageKey);
+    localStorage.setItem(historyKey,JSON.stringify(history));
+
+    state = makeNewState("40", false);
+    localStorage.setItem(storageKey,JSON.stringify(state));
+
+    showAppMode();
+    alert("Tracker archived in History.");
+  }catch(err){
+    state = currentBackup;
+
+    try{
+      localStorage.setItem(storageKey,JSON.stringify(state));
+    }catch(e){}
+
+    alert("Archive could not be saved because browser storage is full. Delete one or more photos, then try Archive again.");
+  }
+}
+
+/* =========================================================
+   SECTION: HISTORY
+   ========================================================= */
+
+function openHistory(){
+  const history = loadHistory();
+
+  historyList.innerHTML = "";
+
+  if(!history.length){
+    historyList.innerHTML = "<div class='history-item'><h3>No archived trackers yet</h3><p>When you archive a tracker, it will show up here.</p></div>";
+  }
+
+  history.forEach((item,index)=>{
+    const completed = item.days.filter(d=>d.complete).length;
+    const startWeight = item.startWeight || getFirstWeight(item.days);
+    const finishWeight = getLastWeight(item.days);
+    const startPhoto = getFirstPhoto(item.days);
+    const finishPhoto = getLastPhoto(item.days);
+    const planTitle = item.fastName || item.planTitle || plans[item.fastType].title;
+
+    const div = document.createElement("div");
+    div.className = "archive-summary-card";
+
+    div.innerHTML =
+      "<div class='archive-summary-head'>" +
+        "<h3>" + planTitle + "</h3>" +
+        "<p>Archived: " + (item.archivedAt || "—") + "</p>" +
+      "</div>" +
+      "<div class='archive-summary-body'>" +
+        "<div class='archive-stats'>" +
+          "<div class='archive-stat'><small>COMPLETED</small><b>" + completed + "/" + item.days.length + "</b></div>" +
+          "<div class='archive-stat'><small>START WEIGHT</small><b>" + startWeight + "</b></div>" +
+          "<div class='archive-stat'><small>FINISH WEIGHT</small><b>" + finishWeight + "</b></div>" +
+          "<div class='archive-stat'><small>PHOTOS</small><b>" + item.days.filter(d=>d.media).length + "</b></div>" +
+        "</div>" +
+        "<div class='archive-photos'>" +
+          photoBlock(startPhoto,"Starting Photo") +
+          photoBlock(finishPhoto,"Finish Photo") +
+        "</div>" +
+      "</div>";
+
+    const actions = document.createElement("div");
+    actions.className = "history-actions";
+    actions.style.padding = "0 12px 12px";
+
+    const view = document.createElement("button");
+    view.className = "action-btn";
+    view.type = "button";
+    view.textContent = "View Full Archive";
+    view.onclick = ()=>viewArchive(index);
+
+    const restore = document.createElement("button");
+    restore.className = "action-btn ghost-btn";
+    restore.type = "button";
+    restore.textContent = "Restore";
+    restore.onclick = ()=>restoreArchive(index);
+
+    const del = document.createElement("button");
+    del.className = "action-btn ghost-btn";
+    del.type = "button";
+    del.textContent = "Delete";
+    del.onclick = ()=>deleteArchive(index);
+
+    actions.appendChild(view);
+    actions.appendChild(restore);
+    actions.appendChild(del);
+
+    div.appendChild(actions);
+    historyList.appendChild(div);
+  });
+
+  historyModal.classList.add("open");
+}
+
+function viewArchive(index){
+  const history = loadHistory();
+  const item = history[index];
+
+  if(!item) return;
+
+  archiveViewTitle.textContent = item.fastName || item.planTitle || plans[item.fastType].title;
+
+  const completed = item.days.filter(d=>d.complete).length;
+  const startWeight = item.startWeight || getFirstWeight(item.days);
+  const finishWeight = getLastWeight(item.days);
+  const startPhoto = getFirstPhoto(item.days);
+  const finishPhoto = getLastPhoto(item.days);
+
+  let html = "";
+
+  html += "<div class='history-item'>";
+  html += "<h3>Summary</h3>";
+  html += "<p><b>Name:</b> " + (item.fastName || "—") + "</p>";
+  html += "<p><b>Archived:</b> " + (item.archivedAt || "—") + "</p>";
+  html += "<p><b>Completed:</b> " + completed + "/" + item.days.length + " days</p>";
+  html += "<p><b>Start Date:</b> " + (item.startDate || "—") + "</p>";
+  html += "<p><b>End Date:</b> " + (item.endDate || "—") + "</p>";
+  html += "<p><b>Start Weight:</b> " + startWeight + "</p>";
+  html += "<p><b>Finish Weight:</b> " + finishWeight + "</p>";
+  html += "<p><b>Goal Weight:</b> " + (item.goalWeight || "—") + "</p>";
+  html += "<p><b>Why:</b> " + (item.why || "—") + "</p>";
+  html += "<div class='archive-photos'>";
+  html += photoBlock(startPhoto,"Starting Photo");
+  html += photoBlock(finishPhoto,"Finish Photo");
+  html += "</div>";
+  html += "</div>";
+
+  item.days.forEach(day=>{
+    const verse = dailyVerses[Math.min(day.day,40) - 1];
+
+    html += "<div class='archive-day'>";
+    html += "<b>Day " + day.day + "</b> — " + (day.complete ? "Complete" : "Not complete");
+    html += "<br>Weight: " + (day.weight || "—");
+    html += "<br>Note: " + (day.note || "—");
+    html += "<br>Verse: " + verse.reference + " — " + verse.title;
+
+    if(day.media){
+      html += "<div class='archive-media'>";
+      html += "<img src='" + day.media.data + "'>";
+      html += "</div>";
+    }
+
+    html += "</div>";
+  });
+
+  archiveViewBody.innerHTML = html;
+  archiveViewModal.classList.add("open");
+}
+
+function restoreArchive(index){
+  const history = loadHistory();
+  const item = history[index];
+
+  if(!item) return;
+
+  const ok = confirm("Restore this archived tracker as your current tracker?");
+  if(!ok) return;
+
+  state = JSON.parse(JSON.stringify(item));
+  state.hasStarted = true;
+
+  while(state.days.length < 40){
+    const next = state.days.length + 1;
+    state.days.push({
+      day:next,
+      complete:false,
+      weight:"",
+      note:"",
+      media:null
+    });
+  }
+
+  delete state.archivedAt;
+  delete state.completedCount;
+  delete state.planDays;
+  delete state.planTitle;
+
+  try{
+    localStorage.setItem(storageKey,JSON.stringify(state));
+  }catch(err){
+    alert("Could not restore because browser storage is full.");
+    return;
+  }
+
+  historyModal.classList.remove("open");
+  showAppMode();
+  applyPlan();
+  showSide("front");
+}
+
+function deleteArchive(index){
+  const ok = confirm("Delete this archived tracker forever?");
+  if(!ok) return;
+
+  const history = loadHistory();
+  history.splice(index,1);
+
+  try{
+    saveHistory(history);
+  }catch(err){
+    alert("Could not delete archive due to browser storage error.");
+    return;
+  }
+
+  openHistory();
+}
+
+/* =========================================================
+   SECTION: EVENT LISTENERS
+
+   DESIGNER NOTE:
+   Event listeners make buttons/inputs respond.
+
+   Example:
+   startFastBtn.addEventListener("click",startFast);
+
+   Means:
+   When the START button is clicked, run startFast().
+   ========================================================= */
+
+startFastBtn.addEventListener("click",startFast);
+
+document.getElementById("startDate").addEventListener("input",()=>{
+  state.startDate = document.getElementById("startDate").value;
+  recalculateAutoFields();
+  save();
+});
+
+document.getElementById("startWeight").addEventListener("input",()=>{
+  state.startWeight = document.getElementById("startWeight").value;
+  recalculateAutoFields();
+  save();
+});
+
+document.getElementById("goalWeight").addEventListener("input",()=>{
+  state.goalWeight = document.getElementById("goalWeight").value;
+
+  try{
+    localStorage.setItem(storageKey,JSON.stringify(state));
+  }catch(err){
+    alert("Storage is full. Try deleting one or more photos.");
+  }
+});
+
+document.getElementById("why").addEventListener("input",()=>{
+  state.why = document.getElementById("why").value;
+
+  try{
+    localStorage.setItem(storageKey,JSON.stringify(state));
+  }catch(err){
+    alert("Storage is full. Try deleting one or more photos.");
+  }
+});
+
+flipBtn.addEventListener("click",()=>{
+  showSide(side === "front" ? "back" : "front");
+});
+
+themeIcon.addEventListener("click",()=>{
+  themeMenu.classList.toggle("open");
+});
+
+document.querySelectorAll(".theme-choice").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    state.themeType = btn.dataset.theme;
+    setTheme(state.themeType);
+    themeMenu.classList.remove("open");
+    save();
+  });
+});
+
+fastType.addEventListener("change",()=>{
+  const newType = fastType.value;
+
+  if(newType === state.fastType) return;
+
+  changeFastLength(newType);
+});
+
+resetBtn.addEventListener("click",()=>{
+  const ok = confirm("Reset this tracker and return to the Start screen?");
+
+  if(!ok) return;
+
+  state = makeNewState("40", false);
+
+  try{
+    localStorage.setItem(storageKey,JSON.stringify(state));
+  }catch(err){
+    localStorage.removeItem(storageKey);
+  }
+
+  showAppMode();
+});
+
+archiveBtn.addEventListener("click",archiveCurrentFast);
+historyBtn.addEventListener("click",openHistory);
+
+closeHistory.addEventListener("click",()=>{
+  historyModal.classList.remove("open");
+});
+
+closeArchiveView.addEventListener("click",()=>{
+  archiveViewModal.classList.remove("open");
+});
+
+modalComplete.addEventListener("click",()=>{
+  if(activeDayIndex === null) return;
+
+  state.days[activeDayIndex].complete = !state.days[activeDayIndex].complete;
+
+  modalComplete.textContent = state.days[activeDayIndex].complete ? "✓ Complete" : "Mark Complete";
+  modalComplete.classList.toggle("done",state.days[activeDayIndex].complete);
+
+  save();
+});
+
+modalWeight.addEventListener("input",()=>{
+  if(activeDayIndex === null) return;
+
+  state.days[activeDayIndex].weight = modalWeight.value;
+  save();
+});
+
+modalNote.addEventListener("input",()=>{
+  if(activeDayIndex === null) return;
+
+  state.days[activeDayIndex].note = modalNote.value;
+
+  try{
+    localStorage.setItem(storageKey,JSON.stringify(state));
+  }catch(err){
+    alert("Storage is full. Try deleting one or more photos.");
+  }
+});
+
+cameraInput.addEventListener("change",()=>{
+  const file = cameraInput.files && cameraInput.files[0];
+  handlePhotoFile(file);
+  cameraInput.value = "";
+});
+
+uploadInput.addEventListener("change",()=>{
+  const file = uploadInput.files && uploadInput.files[0];
+  handlePhotoFile(file);
+  uploadInput.value = "";
+});
+
+closeModal.addEventListener("click",closeDayEditor);
+
+dayModal.addEventListener("click",(e)=>{
+  if(e.target === dayModal){
+    closeDayEditor();
+  }
+});
+
+historyModal.addEventListener("click",(e)=>{
+  if(e.target === historyModal){
+    historyModal.classList.remove("open");
+  }
+});
+
+archiveViewModal.addEventListener("click",(e)=>{
+  if(e.target === archiveViewModal){
+    archiveViewModal.classList.remove("open");
+  }
+});
+
+/* =========================================================
+   SECTION: START APP
+
+   DESIGNER NOTE:
+   This runs automatically when the page opens.
+
+   If a tracker is already started, it loads the tracker.
+   If not, it shows the start screen.
+   ========================================================= */
+
+showAppMode();
+
+if(state.hasStarted){
+  applyPlan();
+  showSide("front");
+}else{
+  setTheme("forest");
+}
+
+</script>
+
+</body>
+</html>

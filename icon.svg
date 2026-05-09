@@ -1,0 +1,20 @@
+<!--
+OTTERMODE APP ICON
+
+DESIGNER NOTE:
+This is a simple placeholder SVG app icon.
+You can replace this later with a polished logo/icon.
+
+Color guide:
+#1f2a17 = dark forest green
+#f5edd7 = cream
+#3e5a2a = green
+#7a4e24 = brown
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#1f2a17"/>
+  <circle cx="256" cy="242" r="178" fill="#f5edd7"/>
+  <path d="M256 95 L398 370 H114 Z" fill="#3e5a2a"/>
+  <path d="M256 178 L334 370 H178 Z" fill="#7a4e24"/>
+  <text x="256" y="452" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="900" fill="#f5edd7">OTTER</text>
+</svg>

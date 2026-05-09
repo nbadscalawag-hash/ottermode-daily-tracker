@@ -1,0 +1,19 @@
+{
+  "name": "Ottermode Daily Tracker",
+  "short_name": "Ottermode",
+  "description": "A daily goal, fasting, and progress tracker built for consistency, discipline, and freedom.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1f2a17",
+  "theme_color": "#3e5a2a",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
