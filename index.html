@@ -64,6 +64,12 @@ SECTION: START APP
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ottermode Daily Tracker</title>
 
+<!-- PWA / APK READY LINKS -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3e5a2a">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+
+
 <style>
 
 /* =========================================================
@@ -3369,6 +3375,26 @@ if(state.hasStarted){
   setTheme("forest");
 }
 
+</script>
+
+
+<!-- SERVICE WORKER REGISTRATION -->
+<script>
+/*
+DESIGNER NOTE:
+This connects sw.js so the app can cache files and behave more like an installed app.
+*/
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./sw.js")
+      .then(function () {
+        console.log("Ottermode service worker registered.");
+      })
+      .catch(function (error) {
+        console.log("Service worker failed:", error);
+      });
+  });
+}
 </script>
 
 </body>
